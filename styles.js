@@ -30,10 +30,14 @@ CKEDITOR.stylesSet.add( 'default', [
 	{ name: 'Preformatted Text',element: 'pre' },
 	{ name: 'Address',			element: 'address' },
 	*/
-
+	{ name:	'module-note',		element: 'p', attributes: { 'class': 'module-note'} }, 
+	{ name:	'module-alert',		element: 'p', attributes: { 'class': 'module-alert'} },
+	{ name:	'clear',			element: 'p', attributes: { 'class': 'clear'} },	
+	{ name:	'clear',			element: 'div', attributes: { 'class': 'clear'} }, 
 	{ name: 'Italic Title',		element: 'h2', styles: { 'font-style': 'italic' } },
 	{ name: 'Subtitle',			element: 'h3', styles: { 'color': '#aaa', 'font-style': 'italic' } },
-	{
+	
+	/*{
 		name: 'Special Container',
 		element: 'div',
 		styles: {
@@ -41,7 +45,7 @@ CKEDITOR.stylesSet.add( 'default', [
 			background: '#eee',
 			border: '1px solid #ccc'
 		}
-	},
+	},*/
 
 	/* Inline Styles */
 
@@ -56,7 +60,7 @@ CKEDITOR.stylesSet.add( 'default', [
 	{ name: 'Subscript',		element: 'sub' },
 	{ name: 'Superscript',		element: 'sup' },
 	*/
-
+	
 	{ name: 'Marker: Yellow',	element: 'span', styles: { 'background-color': 'Yellow' } },
 	{ name: 'Marker: Green',	element: 'span', styles: { 'background-color': 'Lime' } },
 
@@ -77,6 +81,7 @@ CKEDITOR.stylesSet.add( 'default', [
 
 	{ name: 'Language: RTL',	element: 'span', attributes: { 'dir': 'rtl' } },
 	{ name: 'Language: LTR',	element: 'span', attributes: { 'dir': 'ltr' } },
+	
 
 	/* Object Styles */
 
@@ -91,6 +96,7 @@ CKEDITOR.stylesSet.add( 'default', [
 		element: 'img',
 		attributes: { 'class': 'right' }
 	},
+	{ name: 'table-accent',	element: 'table', attributes: { 'class': 'table-accent' } },
 
 	{
 		name: 'Compact table',

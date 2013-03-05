@@ -5,34 +5,32 @@
 
 CKEDITOR.editorConfig = function( config ) {
 	// Define changes to default configuration here. For example:
-	// config.language = 'fr';
+	 //config.language = 'fr';
 	// config.uiColor = '#AADC6E';
 	// %REMOVE_START%
+	 config.indentClasses = ['indent-small', 'indent-medium', 'indent-large'];
+	 config.spanClasses = ['span-2', 'span-3', 'span-4', 'span-5'];
+	 config.blockcLookupList = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5'];
+               config.startupShowBorders = true;
+			   config.contentsCss = ['/wet-boew/theme-gcwu-fegc/css/theme-min.css','/wet-boew/grids/css/util-min.css'];
+			   config.disableNativeSpellChecker = false;
+            //   config.stylesSet = [];
 	config.plugins =
-		'about,' +
 		'a11yhelp,' +
 		'basicstyles,' +
 		'bidi,' +
 		'blockquote,' +
 		'clipboard,' +
-		'colorbutton,' +
-		'colordialog,' +
 		'contextmenu,' +
 		'div,' +
 		'elementspath,' +
 		'enterkey,' +
 		'entities,' +
-		'filebrowser,'+
 		'find,' +
-		'flash,' +
 		'floatingspace,' +
-		'font,' +
 		'format,' +
-		'forms,' +
-		'horizontalrule,' +
 		'htmlwriter,' +
 		'image,' +
-		'iframe,' +
 		'indent,' +
 		'justify,' +
 		'link,' +
@@ -52,10 +50,10 @@ CKEDITOR.editorConfig = function( config ) {
 		'selectall,' +
 		'showblocks,' +
 		'showborders,' +
-		'smiley,' +
 		'sourcearea,' +
 		'specialchar,' +
 		'stylescombo,' +
+		'span,' +
 		'tab,' +
 		'table,' +
 		'tabletools,' +

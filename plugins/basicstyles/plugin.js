@@ -5,7 +5,7 @@
 
 CKEDITOR.plugins.add( 'basicstyles', {
 	lang: 'af,ar,bg,bn,bs,ca,cs,cy,da,de,el,en-au,en-ca,en-gb,en,eo,es,et,eu,fa,fi,fo,fr-ca,fr,gl,gu,he,hi,hr,hu,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt-br,pt,ro,ru,sk,sl,sr-latn,sr,sv,th,tr,ug,uk,vi,zh-cn,zh', // %REMOVE_LINE_CORE%
-	icons: 'bold,italic,underline,strike,subscript,superscript', // %REMOVE_LINE_CORE%
+	icons: 'bold,italic,strike,subscript,superscript', // %REMOVE_LINE_CORE%
 	init: function( editor ) {
 		var order = 0;
 		// All buttons use the same code to register. So, to avoid
@@ -40,7 +40,7 @@ CKEDITOR.plugins.add( 'basicstyles', {
 
 		addButtonCommand( 'Bold', lang.bold, 'bold', config.coreStyles_bold );
 		addButtonCommand( 'Italic', lang.italic, 'italic', config.coreStyles_italic );
-		addButtonCommand( 'Underline', lang.underline, 'underline', config.coreStyles_underline );
+		//addButtonCommand( 'Underline', lang.underline, 'underline', config.coreStyles_underline );
 		addButtonCommand( 'Strike', lang.strike, 'strike', config.coreStyles_strike );
 		addButtonCommand( 'Subscript', lang.subscript, 'subscript', config.coreStyles_subscript );
 		addButtonCommand( 'Superscript', lang.superscript, 'superscript', config.coreStyles_superscript );
@@ -48,7 +48,7 @@ CKEDITOR.plugins.add( 'basicstyles', {
 		editor.setKeystroke( [
 			[ CKEDITOR.CTRL + 66 /*B*/, 'bold' ],
 			[ CKEDITOR.CTRL + 73 /*I*/, 'italic' ],
-			[ CKEDITOR.CTRL + 85 /*U*/, 'underline' ]
+			//[ CKEDITOR.CTRL + 85 /*U*/, 'underline' ]
 			] );
 	}
 });
@@ -96,7 +96,7 @@ CKEDITOR.config.coreStyles_italic = { element: 'em', overrides: 'i' };
  * @cfg
  * @member CKEDITOR.config
  */
-CKEDITOR.config.coreStyles_underline = { element: 'u' };
+//CKEDITOR.config.coreStyles_underline = { element: 'u' };
 
 /**
  * The style definition that applies the <strike>strike-through</strike> style to the text.

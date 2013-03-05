@@ -11,7 +11,7 @@
 	var listNodeNames = { ol:1,ul:1 },
 		isNotWhitespaces = CKEDITOR.dom.walker.whitespaces( true ),
 		isNotBookmark = CKEDITOR.dom.walker.bookmark( false, true );
-
+	
 	function indentCommand( editor, name ) {
 		this.name = name;
 		this.useIndentClasses = editor.config.indentClasses && editor.config.indentClasses.length > 0;
@@ -40,7 +40,7 @@
 		refresh: function( editor, path ) {
 			var list = path && path.contains( listNodeNames ),
 				firstBlock = path.block || path.blockLimit;
-
+				
 			if ( list )
 				this.setState( CKEDITOR.TRISTATE_OFF );
 
@@ -76,7 +76,7 @@
 		exec: function( editor ) {
 			var self = this,
 				database = {};
-
+			
 			function indentList( listNode ) {
 				// Our starting and ending points of the range might be inside some blocks under a list item...
 				// So before playing with the iterator, we need to expand the block to include the list items.

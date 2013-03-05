@@ -11,6 +11,7 @@ CKEDITOR.plugins.add( 'link', {
 		// Add the CSS styles for anchor placeholders.
 		var baseStyle = 'background:url(' + CKEDITOR.getUrl( this.path + 'images/anchor.png' ) + ') no-repeat %1 center;' +
 			'border:1px dotted #00f;';
+		var baseBlockStyle = 'background:url(' + CKEDITOR.getUrl( this.path + 'images/anchor.png' ) + ') no-repeat  ;' ;
 
 		var template = '.%2 a.cke_anchor,' +
 			'.%2 a.cke_anchor_empty' +
@@ -37,6 +38,10 @@ CKEDITOR.plugins.add( 'link', {
 				'height:1.15em;' +
 				// Opera works better with "middle" (even if not perfect)
 				'vertical-align:' + ( CKEDITOR.env.opera ? 'middle' : 'text-bottom' ) + ';' +
+			'}'
+			+'div[id]:hover'+
+			',p[id]:hover'+'{' +
+				baseBlockStyle +
 			'}';
 
 		// Styles with contents direction awareness.

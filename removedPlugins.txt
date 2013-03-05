@@ -1,0 +1,11 @@
+
+		'about,' +
+		'colorbutton,' +
+		'colordialog,' +
+		'filebrowser,'+
+		'flash,' +
+		'font,' +
+		'forms,' +
+		'horizontalrule,' +
+		'iframe,' +
+		'smiley,' +

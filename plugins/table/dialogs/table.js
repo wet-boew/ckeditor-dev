@@ -215,7 +215,7 @@
 							}
 						}
 					}
-
+						table.removeAttributes( ['align','border','style','bordercolor','cellpadding','cellspacing'] );
 					// Set the width and height.
 					info.txtHeight ? table.setStyle( 'height', info.txtHeight ) : table.removeStyle( 'height' );
 					info.txtWidth ? table.setStyle( 'width', info.txtWidth ) : table.removeStyle( 'width' );
@@ -249,7 +249,7 @@
 				label: editor.lang.table.title,
 				elements: [
 					{
-					type: 'hbox',
+					type: 'hbox', //kxm outside horizontal property for outside table for diolgue box
 					widths: [ null, null ],
 					styles: [ 'vertical-align:top' ],
 					children: [
@@ -263,7 +263,7 @@
 							'default': 3,
 							label: editor.lang.table.rows,
 							required: true,
-							controlStyle: 'width:5em',
+							controlStyle: 'width:5em', //km controls width of innput cell
 							validate: validatorNum( editor.lang.table.invalidRows ),
 							setup: function( selectedElement ) {
 								this.setValue( selectedElement.$.rows.length );
@@ -287,7 +287,57 @@
 							type: 'html',
 							html: '&nbsp;'
 						},
+							
+							/*kxm remove border not allowed in html5 see dependancy showborders/plugin
+line 132							{
+							type: 'text',
+							id: 'txtBorder',
+							'default': 1,
+							label: editor.lang.table.border,
+							controlStyle: 'width:3em',
+							validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
+							setup: function( selectedTable ) {
+								this.setValue( selectedTable.getAttribute( 'border' ) || '' );
+							},
+							commit: function( data, selectedTable ) {
+								if ( this.getValue() )
+									selectedTable.setAttribute( 'border', this.getValue() );
+								else
+									selectedTable.removeAttribute( 'border' );
+							}
+						},*/
+						
+						/*kxm remove align not allowed in html5
 							{
+							id: 'cmbAlign',
+							type: 'select',
+							'default': '',
+							label: editor.lang.common.align,
+							items: [
+								[ editor.lang.common.notSet, '' ],
+								[ editor.lang.common.alignLeft, 'left' ],
+								[ editor.lang.common.alignCenter, 'center' ],
+								[ editor.lang.common.alignRight, 'right' ]
+								],
+							setup: function( selectedTable ) {
+								this.setValue( selectedTable.getAttribute( 'align' ) || '' );
+							},
+							commit: function( data, selectedTable ) {
+								if ( this.getValue() )
+									selectedTable.setAttribute( 'align', this.getValue() );
+								else
+									selectedTable.removeAttribute( 'align' );
+							}
+						}*/
+						]
+					},
+						
+						{
+						type: 'vbox',
+						padding: 0,
+						children: [
+						
+						{
 							type: 'select',
 							id: 'selHeaders',
 							'default': '',
@@ -321,50 +371,7 @@
 							},
 							commit: commitValue
 						},
-							{
-							type: 'text',
-							id: 'txtBorder',
-							'default': 1,
-							label: editor.lang.table.border,
-							controlStyle: 'width:3em',
-							validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
-							setup: function( selectedTable ) {
-								this.setValue( selectedTable.getAttribute( 'border' ) || '' );
-							},
-							commit: function( data, selectedTable ) {
-								if ( this.getValue() )
-									selectedTable.setAttribute( 'border', this.getValue() );
-								else
-									selectedTable.removeAttribute( 'border' );
-							}
-						},
-							{
-							id: 'cmbAlign',
-							type: 'select',
-							'default': '',
-							label: editor.lang.common.align,
-							items: [
-								[ editor.lang.common.notSet, '' ],
-								[ editor.lang.common.alignLeft, 'left' ],
-								[ editor.lang.common.alignCenter, 'center' ],
-								[ editor.lang.common.alignRight, 'right' ]
-								],
-							setup: function( selectedTable ) {
-								this.setValue( selectedTable.getAttribute( 'align' ) || '' );
-							},
-							commit: function( data, selectedTable ) {
-								if ( this.getValue() )
-									selectedTable.setAttribute( 'align', this.getValue() );
-								else
-									selectedTable.removeAttribute( 'align' );
-							}
-						}
-						]
-					},
-						{
-						type: 'vbox',
-						padding: 0,
-						children: [
+						]}/*kxm width, height, cellspacing, cellpadding not allowed in html 5 
 							{
 							type: 'hbox',
 							widths: [ '5em' ],
@@ -456,7 +463,7 @@
 							}
 						}
 						]
-					}
+					} */
 					]
 				},
 					{

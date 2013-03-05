@@ -6,6 +6,7 @@
 CKEDITOR.dialog.add( 'link', function( editor ) {
 	var plugin = CKEDITOR.plugins.link;
 	// Handles the event when the "Target" selection box is changed.
+	
 	var targetChanged = function() {
 			var dialog = this.getDialog(),
 				popupFeatures = dialog.getContentElement( 'target', 'popupFeatures' ),
@@ -127,6 +128,9 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 					retval.type = 'anchor';
 					retval.anchor = {};
 					retval.anchor.name = retval.anchor.id = anchorMatch[ 1 ];
+					retval.type = 'div';
+					retval.divs = {};
+					retval.divs.name = retval.divs.id = divMatch[ 1 ];
 				}
 				// Protected email link as encoded string.
 				else if ( ( emailMatch = href.match( emailRegex ) ) ) {
@@ -202,11 +206,11 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 				advAttr( 'advStyles', 'style' );
 				advAttr( 'advRel', 'rel' );
 			}
-
+			
 			// Find out whether we have any anchors in the editor.
-			var anchors = retval.anchors = [],
-				i, count, item;
-
+			var anchors = retval.anchors = [], i, count, item;
+			var divs = retval.divs = [], i, count, item;
+			
 			// For some browsers we set contenteditable="false" on anchors, making document.anchors not to include them, so we must traverse the links manually (#7893).
 			if ( CKEDITOR.plugins.link.emptyAnchorFix ) {
 				var links = editor.document.getElementsByTag( 'a' );
@@ -217,12 +221,24 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 				}
 			} else {
 				var anchorList = new CKEDITOR.dom.nodeList( editor.document.$.anchors );
-				for ( i = 0, count = anchorList.count(); i < count; i++ ) {
+								for ( i = 0, count = anchorList.count(); i < count; i++ ) {
 					item = anchorList.getItem( i );
 					anchors[ i ] = { name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) };
 				}
+				var blockList= editor.config.blockcLookupList;
+				for ( x = 0, xcount = blockList.length; x < xcount; x++ ) {
+				var blocks = editor.document.getElementsByTag( blockList[x] );
+				for ( i = 0, count = blocks.count(); i < count; i++ ) {
+					item = blocks.getItem( i );
+					if ( item.hasAttribute( 'id' ) )
+						divs.push({ name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) } );
+				}
+				}
+				
 			}
-
+				
+		
+				
 			if ( CKEDITOR.plugins.link.fakeAnchor ) {
 				var imgs = editor.document.getElementsByTag( 'img' );
 				for ( i = 0, count = imgs.count(); i < count; i++ ) {
@@ -532,6 +548,10 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 								for ( var i = 0; i < data.anchors.length; i++ ) {
 									if ( data.anchors[ i ].id )
 										this.add( data.anchors[ i ].id );
+								}
+								for ( var i = 0; i < data.divs.length; i++ ) {
+									if ( data.divs[ i ].id )
+										this.add( data.divs[ i ].id );
 								}
 
 								if ( data.anchor )
@@ -1093,7 +1113,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 
 								if ( emailProtection == 'encode' ) {
 									linkHref = [ 'javascript:void(location.href=\'mailto:\'+',
-																															protectEmailAddressAsEncodedString( address ) ];
+									protectEmailAddressAsEncodedString( address ) ];
 									// parameters are optional.
 									argList && linkHref.push( '+\'', escapeSingleQuote( argList ), '\'' );
 
