@@ -7,15 +7,15 @@
 	/** @class CKEDITOR */
 
 	/**
-	 * Turn a DOM element with `contenteditable` attribute set to `true` into a
-	 * CKEditor instance, check {@link CKEDITOR.dtd#$editable} for the list of
+	 * Turns a DOM element with `contenteditable` attribute set to `true` into a
+	 * CKEditor instance. Check {@link CKEDITOR.dtd#$editable} for the list of
 	 * allowed element names.
 	 *
-	 *		<div contenteditable="true" id="content"></textarea>
+	 *		<div contenteditable="true" id="content">...</div>
 	 *		...
 	 *		CKEDITOR.inline( 'content' );
 	 *
-	 * @param {Object/String} element The DOM element (`<textarea>`), its ID or name.
+	 * @param {Object/String} element The DOM element or its ID.
 	 * @param {Object} [instanceConfig] The specific configurations to apply to this editor instance.
 	 * See {@link CKEDITOR.config}.
 	 * @returns {CKEDITOR.editor} The editor instance created.
@@ -49,6 +49,9 @@
 			// Load and process editor data.
 			editor.setData( editor.getData( 1 ) );
 
+			// Clean on startup.
+			editor.resetDirty();
+
 			editor.fire( 'contentDom' );
 			// Inline editing defaults to "wysiwyg" mode, so plugins don't
 			// need to make special handling for this "mode-less" environment.
@@ -56,11 +59,9 @@
 			editor.fire( 'mode' );
 
 			// The editor is completely loaded for interaction.
+			editor.status = 'ready';
 			editor.fireOnce( 'instanceReady' );
 			CKEDITOR.fire( 'instanceReady', null, editor );
-
-			// Clean on startup.
-			editor.resetDirty();
 
 			// give priority to plugins that relay on editor#loaded for bootstrapping.
 		}, null, null, 10000 );

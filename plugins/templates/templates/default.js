@@ -51,6 +51,12 @@ CKEDITOR.addTemplates( 'default', {
 			'More text goes here.' +
 			'</p>'
 	},
+	{
+		title: 'Note',
+		image: 'template2.gif',
+		description: 'A simple note container',
+		html:'<div class="module-note span2">Insert text here. foobarfoobar.</div>'
+	},
 		{
 		title: 'Text and Table',
 		image: 'template3.gif',
@@ -63,7 +69,6 @@ CKEDITOR.addTemplates( 'default', {
 				'<caption style="border:solid 1px black">' +
 					'<strong>Table title</strong>' +
 				'</caption>' +
-				'</tr>' +
 				'<tr>' +
 					'<td>&nbsp;</td>' +
 					'<td>&nbsp;</td>' +

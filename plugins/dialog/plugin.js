@@ -118,14 +118,14 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 		input && input.removeAttribute( 'aria-invalid' );
 	}
 
-	var templateSource = '<div class="cke cke_reset_all {editorId} {editorDialogClass}' +
+	var templateSource = '<div class="cke_reset_all {editorId} {editorDialogClass}' +
 		'" dir="{langDir}"' +
 		' lang="{langCode}"' +
-		' role="application"' +
+		' role="dialog"' +
+		' aria-labelledby="cke_dialog_title_{id}"' +
 		'>' +
 		'<table class="cke_dialog ' + CKEDITOR.env.cssClass + ' cke_{langDir}"' +
-			' aria-labelledby="cke_dialog_title_{id}"' +
-			' style="position:absolute" role="dialog">' +
+			' style="position:absolute" role="presentation">' +
 			'<tr><td role="presentation">' +
 			'<div class="cke_dialog_body" role="presentation">' +
 				'<div id="cke_dialog_title_{id}" class="cke_dialog_title" role="presentation"></div>' +
@@ -161,8 +161,7 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 
 		// IFrame shim for dialog that masks activeX in IE. (#7619)
 		if ( CKEDITOR.env.ie && !CKEDITOR.env.ie6Compat ) {
-			var isCustomDomain = CKEDITOR.env.isCustomDomain(),
-				src = 'javascript:void(function(){' + encodeURIComponent( 'document.open();' + ( isCustomDomain ? ( 'document.domain="' + document.domain + '";' ) : '' ) + 'document.close();' ) + '}())',
+			var src = 'javascript:void(function(){' + encodeURIComponent( 'document.open();(' + CKEDITOR.tools.fixDomain + ')();document.close();' ) + '}())',
 				iframe = CKEDITOR.dom.element.createFromHtml( '<iframe' +
 					' frameBorder="0"' +
 					' class="cke_iframe_shim"' +
@@ -1024,6 +1023,9 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 		 * @param {Object} contents Content definition.
 		 */
 		addPage: function( contents ) {
+			if ( contents.requiredContent && !this._.editor.filter.check( contents.requiredContent ) )
+				return;
+
 			var pageHtml = [],
 				titleHtml = contents.label ? ' title="' + CKEDITOR.tools.htmlEncode( contents.label ) + '"' : '',
 				elements = contents.elements,
@@ -1035,6 +1037,25 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 					padding: contents.padding,
 					style: contents.style || 'width: 100%;'
 				}, pageHtml );
+
+			var contentMap = this._.contents[ contents.id ] = {},
+				cursor,
+				children = vbox.getChild(),
+				enabledFields = 0;
+
+			while ( ( cursor = children.shift() ) ) {
+				// Count all allowed fields.
+				if ( !cursor.notAllowed && cursor.type != 'hbox' && cursor.type != 'vbox' )
+					enabledFields++;
+
+				contentMap[ cursor.id ] = cursor;
+				if ( typeof( cursor.getChild ) == 'function' )
+					children.push.apply( children, cursor.getChild() );
+			}
+
+			// If all fields are disabled (because they are not allowed) hide this tab.
+			if ( !enabledFields )
+				contents.hidden = true;
 
 			// Create the HTML for the tab and the content block.
 			var page = CKEDITOR.dom.element.createFromHtml( pageHtml.join( '' ) );
@@ -1064,16 +1085,6 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 			!contents.hidden && this._.pageCount++;
 			this._.lastTab = tab;
 			this.updateStyle();
-
-			var contentMap = this._.contents[ contents.id ] = {},
-				cursor,
-				children = vbox.getChild();
-
-			while ( ( cursor = children.shift() ) ) {
-				contentMap[ cursor.id ] = cursor;
-				if ( typeof( cursor.getChild ) == 'function' )
-					children.push.apply( children, cursor.getChild() );
-			}
 
 			// Attach the DOM nodes.
 
@@ -1420,6 +1431,22 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 		 */
 		getCurrent: function() {
 			return CKEDITOR.dialog._.currentTop;
+		},
+
+		/**
+		 * Check whether tab wasn't removed by {@link CKEDITOR.config#removeDialogTabs}.
+		 *
+		 * @since 4.1
+		 * @static
+		 * @param {CKEDITOR.editor} editor
+		 * @param {String} dialogName
+		 * @param {String} tabName
+		 * @returns {Boolean}
+		 */
+		isTabEnabled: function( editor, dialogName, tabName ) {
+			var cfg = editor.config.removeDialogTabs;
+
+			return !( cfg && cfg.match( new RegExp( '(?:^|;)' + dialogName + ':' + tabName + '(?:$|;)', 'i' ) ) );
 		},
 
 		/**
@@ -1948,8 +1975,7 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 
 			if ( CKEDITOR.env.ie6Compat ) {
 				// Support for custom document.domain in IE.
-				var isCustomDomain = CKEDITOR.env.isCustomDomain(),
-					iframeHtml = '<html><body style=\\\'background-color:' + backgroundColorStyle + ';\\\'></body></html>';
+				var iframeHtml = '<html><body style=\\\'background-color:' + backgroundColorStyle + ';\\\'></body></html>';
 
 				html.push( '<iframe' +
 					' hidefocus="true"' +
@@ -1957,12 +1983,13 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 					' id="cke_dialog_background_iframe"' +
 					' src="javascript:' );
 
-				html.push( 'void((function(){' +
+				html.push( 'void((function(){' + encodeURIComponent(
 					'document.open();' +
-					( isCustomDomain ? 'document.domain=\'' + document.domain + '\';' : '' ) +
+					// Support for custom document.domain in IE.
+					'(' + CKEDITOR.tools.fixDomain + ')();' +
 					'document.write( \'' + iframeHtml + '\' );' +
-					'document.close();' +
-					'})())' );
+					'document.close();'
+				) + '})())' );
 
 				html.push( '"' +
 					' style="' +
@@ -2190,6 +2217,11 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 					domId = this.domId = attributes.id || CKEDITOR.tools.getNextId() + '_uiElement',
 					id = this.id = elementDefinition.id,
 					i;
+
+				if ( elementDefinition.requiredContent && !dialog.getParentEditor().filter.check( elementDefinition.requiredContent ) ) {
+					styles.display = 'none';
+					this.notAllowed = true;
+				}
 
 				// Set the id, a unique id is required for getElement() to work.
 				attributes.id = domId;
@@ -2426,6 +2458,11 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 						if ( elementDefinition && elementDefinition.expand )
 							html.push( 'height:100%;' );
 						html.push( 'width:' + cssLength( width || '100%' ), ';' );
+
+						// (#10123) Temp fix for dialog broken layout in latest webkit.
+						if ( CKEDITOR.env.webkit )
+							html.push( 'float:none;' );
+
 						html.push( '"' );
 						html.push( 'align="', CKEDITOR.tools.htmlEncode(
 						( elementDefinition && elementDefinition.align ) || ( dialog.getParentEditor().lang.dir == 'ltr' ? 'left' : 'right' ) ), '" ' );
@@ -2795,6 +2832,7 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 	 * @extends CKEDITOR.commandDefinition
 	 * @param {String} dialogName The name of the dialog to open when executing
 	 * this command.
+	 * @param {Object} [ext] Additional command definition's properties.
 	 */
 	CKEDITOR.dialogCommand = function( dialogName, ext ) {
 		this.dialogName = dialogName;
@@ -2813,7 +2851,7 @@ CKEDITOR.DIALOG_RESIZE_BOTH = 3;
 		// undo support should dedicate to specific dialog implementation.
 		canUndo: false,
 
-		editorFocus: CKEDITOR.env.ie || CKEDITOR.env.webkit
+		editorFocus: 1
 	};
 
 	(function() {
@@ -3144,6 +3182,7 @@ CKEDITOR.plugins.add( 'dialog', {
  * @event dialogShow
  * @member CKEDITOR.editor
  * @param {CKEDITOR.editor} editor This editor instance.
+ * @param {CKEDITOR.dialog} data The opened dialog instance.
  */
 
 /**
@@ -3159,6 +3198,7 @@ CKEDITOR.plugins.add( 'dialog', {
  * @event dialogHide
  * @member CKEDITOR.editor
  * @param {CKEDITOR.editor} editor This editor instance.
+ * @param {CKEDITOR.dialog} data The hidden dialog instance.
  */
 
 /**

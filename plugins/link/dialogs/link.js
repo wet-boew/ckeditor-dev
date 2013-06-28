@@ -6,6 +6,7 @@
 CKEDITOR.dialog.add( 'link', function( editor ) {
 	var plugin = CKEDITOR.plugins.link;
 	// Handles the event when the "Target" selection box is changed.
+	
 	var targetChanged = function() {
 			var dialog = this.getDialog(),
 				popupFeatures = dialog.getContentElement( 'target', 'popupFeatures' ),
@@ -127,6 +128,9 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 					retval.type = 'anchor';
 					retval.anchor = {};
 					retval.anchor.name = retval.anchor.id = anchorMatch[ 1 ];
+					retval.type = 'div';
+					retval.divs = {};
+					retval.divs.name = retval.divs.id = divMatch[ 1 ];
 				}
 				// Protected email link as encoded string.
 				else if ( ( emailMatch = href.match( emailRegex ) ) ) {
@@ -202,11 +206,11 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 				advAttr( 'advStyles', 'style' );
 				advAttr( 'advRel', 'rel' );
 			}
-
+			
 			// Find out whether we have any anchors in the editor.
-			var anchors = retval.anchors = [],
-				i, count, item;
-
+			var anchors = retval.anchors = [], i, count, item;
+			var divs = retval.divs = [], i, count, item;
+			
 			// For some browsers we set contenteditable="false" on anchors, making document.anchors not to include them, so we must traverse the links manually (#7893).
 			if ( CKEDITOR.plugins.link.emptyAnchorFix ) {
 				var links = editor.document.getElementsByTag( 'a' );
@@ -217,12 +221,24 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 				}
 			} else {
 				var anchorList = new CKEDITOR.dom.nodeList( editor.document.$.anchors );
-				for ( i = 0, count = anchorList.count(); i < count; i++ ) {
+								for ( i = 0, count = anchorList.count(); i < count; i++ ) {
 					item = anchorList.getItem( i );
 					anchors[ i ] = { name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) };
 				}
+				var blockList= editor.config.blockcLookupList;
+				for ( x = 0, xcount = blockList.length; x < xcount; x++ ) {
+				var blocks = editor.document.getElementsByTag( blockList[x] );
+				for ( i = 0, count = blocks.count(); i < count; i++ ) {
+					item = blocks.getItem( i );
+					if ( item.hasAttribute( 'id' ) )
+						divs.push({ name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) } );
+				}
+				}
+				
 			}
-
+				
+		
+				
 			if ( CKEDITOR.plugins.link.fakeAnchor ) {
 				var imgs = editor.document.getElementsByTag( 'img' );
 				for ( i = 0, count = imgs.count(); i < count; i++ ) {
@@ -533,6 +549,10 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 									if ( data.anchors[ i ].id )
 										this.add( data.anchors[ i ].id );
 								}
+								for ( var i = 0; i < data.divs.length; i++ ) {
+									if ( data.divs[ i ].id )
+										this.add( data.divs[ i ].id );
+								}
 
 								if ( data.anchor )
 									this.setValue( data.anchor.id );
@@ -650,6 +670,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 		},
 			{
 			id: 'target',
+			requiredContent: 'a[target]', // This is not fully correct, because some target option requires JS.
 			label: linkLang.target,
 			title: linkLang.target,
 			elements: [
@@ -892,6 +913,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						id: 'advId',
+						requiredContent: 'a[id]',
 						label: linkLang.id,
 						setup: setupAdvParams,
 						commit: commitAdvParams
@@ -899,6 +921,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'select',
 						id: 'advLangDir',
+						requiredContent: 'a[dir]',
 						label: linkLang.langDir,
 						'default': '',
 						style: 'width:110px',
@@ -913,6 +936,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						id: 'advAccessKey',
+						requiredContent: 'a[accesskey]',
 						width: '80px',
 						label: linkLang.acccessKey,
 						maxLength: 1,
@@ -930,6 +954,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						type: 'text',
 						label: linkLang.name,
 						id: 'advName',
+						requiredContent: 'a[name]',
 						setup: setupAdvParams,
 						commit: commitAdvParams
 
@@ -938,6 +963,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						type: 'text',
 						label: linkLang.langCode,
 						id: 'advLangCode',
+						requiredContent: 'a[lang]',
 						width: '110px',
 						'default': '',
 						setup: setupAdvParams,
@@ -948,6 +974,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						type: 'text',
 						label: linkLang.tabIndex,
 						id: 'advTabIndex',
+						requiredContent: 'a[tabindex]',
 						width: '80px',
 						maxLength: 5,
 						setup: setupAdvParams,
@@ -969,6 +996,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.advisoryTitle,
+						requiredContent: 'a[title]',
 						'default': '',
 						id: 'advTitle',
 						setup: setupAdvParams,
@@ -978,6 +1006,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.advisoryContentType,
+						requiredContent: 'a[type]',
 						'default': '',
 						id: 'advContentType',
 						setup: setupAdvParams,
@@ -993,6 +1022,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.cssClasses,
+						requiredContent: 'a(cke-xyz)', // Random text like 'xyz' will check if all are allowed.
 						'default': '',
 						id: 'advCSSClasses',
 						setup: setupAdvParams,
@@ -1002,6 +1032,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.charset,
+						requiredContent: 'a[charset]',
 						'default': '',
 						id: 'advCharset',
 						setup: setupAdvParams,
@@ -1017,6 +1048,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.rel,
+						requiredContent: 'a[rel]',
 						'default': '',
 						id: 'advRel',
 						setup: setupAdvParams,
@@ -1025,6 +1057,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 						{
 						type: 'text',
 						label: linkLang.styles,
+						requiredContent: 'a{cke-xyz}', // Random text like 'xyz' will check if all are allowed.
 						'default': '',
 						id: 'advStyles',
 						validate: CKEDITOR.dialog.validate.inlineStyle( editor.lang.common.invalidInlineStyle ),
@@ -1093,7 +1126,7 @@ CKEDITOR.dialog.add( 'link', function( editor ) {
 
 								if ( emailProtection == 'encode' ) {
 									linkHref = [ 'javascript:void(location.href=\'mailto:\'+',
-																															protectEmailAddressAsEncodedString( address ) ];
+									protectEmailAddressAsEncodedString( address ) ];
 									// parameters are optional.
 									argList && linkHref.push( '+\'', escapeSingleQuote( argList ), '\'' );
 

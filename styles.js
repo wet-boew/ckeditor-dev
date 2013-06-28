@@ -30,10 +30,22 @@ CKEDITOR.stylesSet.add( 'default', [
 	{ name: 'Preformatted Text',element: 'pre' },
 	{ name: 'Address',			element: 'address' },
 	*/
-
-	{ name: 'Italic Title',		element: 'h2', styles: { 'font-style': 'italic' } },
-	{ name: 'Subtitle',			element: 'h3', styles: { 'color': '#aaa', 'font-style': 'italic' } },
-	{
+	
+	{ name:	'Alert',		element: 'div', attributes: { 'class': 'module-alert span-6'} }, 
+	{ name:	'Archive',		element: 'div', attributes: { 'class': 'module-archive span-6'} }, 
+	{ name:	'Attention',		element: 'div', attributes: { 'class': 'module-attention span-6'} },
+	{ name:	'Note',		element: 'div', attributes: { 'class': 'module-note span-6'} }, 
+	{ name:	'Information',		element: 'div', attributes: { 'class': 'module-info span-6'} },
+	{ name:	'Question',		element: 'div', attributes: { 'class': 'module-question span-6'} },
+	{ name:	'Answer',			element: 'div', attributes: { 'class': 'module-answer span-6'} },	
+	{ name:	'clear',			element: 'div', attributes: { 'class': 'clear'} },	
+	{ name:	'List-Lower Roman',	element: { 'ol': 'li'}, attributes: { 'class': 'list-lower-roman'} },
+	{ name:	'Background Light',	element: 'p', attributes: { 'class': 'background-light'} },	
+	
+	/*{ name: 'Italic Title',		element: 'h2', styles: { 'font-style': 'italic' } },
+	{ name: 'Subtitle',			element: 'h3', styles: { 'color': '#aaa', 'font-style': 'italic' } },*/
+	
+	/*{
 		name: 'Special Container',
 		element: 'div',
 		styles: {
@@ -41,7 +53,7 @@ CKEDITOR.stylesSet.add( 'default', [
 			background: '#eee',
 			border: '1px solid #ccc'
 		}
-	},
+	},*/
 
 	/* Inline Styles */
 
@@ -56,7 +68,7 @@ CKEDITOR.stylesSet.add( 'default', [
 	{ name: 'Subscript',		element: 'sub' },
 	{ name: 'Superscript',		element: 'sup' },
 	*/
-
+	/*
 	{ name: 'Marker: Yellow',	element: 'span', styles: { 'background-color': 'Yellow' } },
 	{ name: 'Marker: Green',	element: 'span', styles: { 'background-color': 'Lime' } },
 
@@ -77,7 +89,8 @@ CKEDITOR.stylesSet.add( 'default', [
 
 	{ name: 'Language: RTL',	element: 'span', attributes: { 'dir': 'rtl' } },
 	{ name: 'Language: LTR',	element: 'span', attributes: { 'dir': 'ltr' } },
-
+	
+*/
 	/* Object Styles */
 
 	{
@@ -91,8 +104,10 @@ CKEDITOR.stylesSet.add( 'default', [
 		element: 'img',
 		attributes: { 'class': 'right' }
 	},
-
-	{
+	{ name: 'Accent',	element: 'table', attributes: { 'class': 'table-accent' } },
+	{ name: 'Zebra',	element: 'table', attributes: { 'class': 'wet-boew-zebra' } },
+	{ name: 'Span-4',	element: 'table', attributes: { 'class': 'span-6' } }
+	/*{
 		name: 'Compact table',
 		element: 'table',
 		attributes: {
@@ -108,6 +123,7 @@ CKEDITOR.stylesSet.add( 'default', [
 
 	{ name: 'Borderless Table',		element: 'table',	styles: { 'border-style': 'hidden', 'background-color': '#E6E6FA' } },
 	{ name: 'Square Bulleted List',	element: 'ul',		styles: { 'list-style-type': 'square' } }
+	*/
 ]);
 
 // %LEAVE_UNMINIFIED% %REMOVE_LINE%

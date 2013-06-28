@@ -92,7 +92,7 @@
 				clone = [];
 
 				for ( var i = 0; i < obj.length; i++ )
-					clone[ i ] = this.clone( obj[ i ] );
+					clone[ i ] = CKEDITOR.tools.clone( obj[ i ] );
 
 				return clone;
 			}
@@ -107,7 +107,7 @@
 
 			for ( var propertyName in obj ) {
 				var property = obj[ propertyName ];
-				clone[ propertyName ] = this.clone( property );
+				clone[ propertyName ] = CKEDITOR.tools.clone( property );
 			}
 
 			return clone;
@@ -192,6 +192,25 @@
 			var copy = function() {};
 			copy.prototype = source;
 			return new copy();
+		},
+
+		/**
+		 * Make fast (shallow) copy of an object.
+		 * This method is faster than {@link #clone} which does
+		 * deep copy of an object (including arrays).
+		 *
+		 * @since 4.1
+		 * @param {Object} source The object to be copied.
+		 * @returns {Object} Copy of `source`.
+		 */
+		copy: function( source ) {
+			var obj = {},
+				name;
+
+			for ( name in source )
+				obj[ name ] = source[ name ];
+
+			return obj;
 		},
 
 		/**
@@ -796,6 +815,7 @@
 
 		/**
 		 * Find and convert `rgb(x,x,x)` colors definition to hexadecimal notation.
+		 *
 		 * @param {String} styleText The style data (or just a string containing rgb colors) to be converted.
 		 * @returns {String} The style data with rgb colors converted to hexadecimal equivalents.
 		 */
@@ -816,7 +836,7 @@
 		 * @param {Boolean} [normalize=false] Normalize properties and values
 		 * (e.g. trim spaces, convert to lower case).
 		 * @param {Boolean} [nativeNormalize=false] Parse the data using the browser.
-		 * @returns {String} The object containing parsed properties.
+		 * @returns {Object} The object containing parsed properties.
 		 */
 		parseCssText: function( styleText, normalize, nativeNormalize ) {
 			var retval = {};
@@ -846,6 +866,152 @@
 				retval[ name ] = value;
 			});
 			return retval;
+		},
+
+		/**
+		 * Serialize `style name => value` hash to a style text.
+		 *
+		 *		var styleObj = CKEDITOR.tools.parseCssText( 'color: red; border: none' );
+		 *		console.log( styleObj.color ); // -> 'red'
+		 *		CKEDITOR.tools.writeCssText( styleObj ); // -> 'color:red; border:none'
+		 *		CKEDITOR.tools.writeCssText( styleObj, true ); // -> 'border:none; color:red'
+		 *
+		 * @since 4.1
+		 * @param {Object} styles The object contaning style properties.
+		 * @param {Boolean} [sort] Whether to sort CSS properties.
+		 * @returns {String} The serialized style text.
+		 */
+		writeCssText: function( styles, sort ) {
+			var name,
+				stylesArr = [];
+
+			for ( name in styles )
+				stylesArr.push( name + ':' + styles[ name ] );
+
+			if ( sort )
+				stylesArr.sort();
+
+			return stylesArr.join( '; ' );
+		},
+
+		/**
+		 * Compare two objects.
+		 *
+		 * **Note:** This method performs shallow, non-strict comparison.
+		 *
+		 * @since 4.1
+		 * @param {Object} left
+		 * @param {Object} right
+		 * @param {Boolean} [onlyLeft] Check only these properties which are present in `left` object.
+		 * @returns {Boolean} Whether objects are identical.
+		 */
+		objectCompare: function( left, right, onlyLeft ) {
+			var name;
+
+			if ( !left && !right )
+				return true;
+			if ( !left || !right )
+				return false;
+
+			for ( name in left ) {
+				if ( left[ name ] != right[ name ] ) {
+					return false;
+				}
+			}
+
+			if ( !onlyLeft ) {
+				for ( name in right ) {
+					if ( left[ name ] != right[ name ] )
+						return false;
+				}
+			}
+
+			return true;
+		},
+
+		/**
+		 * Return array of passed object's keys.
+		 *
+		 *		console.log( CKEDITOR.tools.objectKeys( { foo: 1, bar: false } );
+		 *		// -> [ 'foo', 'bar' ]
+		 *
+		 * @since 4.1
+		 * @param {Object} obj
+		 * @returns {Array} Object's keys.
+		 */
+		objectKeys: function( obj ) {
+			var keys = [];
+			for ( var i in obj )
+				keys.push( i );
+
+			return keys;
+		},
+
+		/**
+		 * Convert an array to an object by rewriting array's items
+		 * to object properties.
+		 *
+		 *		var arr = [ 'foo', 'bar', 'foo' ];
+		 *		console.log( CKEDITOR.tools.convertArrayToObject( arr ) );
+		 *		// -> { foo: true, bar: true }
+		 *		console.log( CKEDITOR.tools.convertArrayToObject( arr, 1 ) );
+		 *		// -> { foo: 1, bar: 1 }
+		 *
+		 * @since 4.1
+		 * @param {Array} arr The array to be converted to object.
+		 * @param [fillWith=true] Set each property of an object to `fillWith` value.
+		 */
+		convertArrayToObject: function( arr, fillWith ) {
+			var obj = {};
+
+			if ( arguments.length == 1 )
+				fillWith = true;
+
+			for ( var i = 0, l = arr.length; i < l; ++i )
+				obj[ arr[ i ] ] = fillWith;
+
+			return obj;
+		},
+
+		/**
+		 * Tries to fix the document.domain of the current document to match the
+		 * parent window domain, avoiding "Same Origin" policy issues.
+		 * This is a IE only requirement.
+		 *
+		 * @since 4.1.2
+		 * @returns {Boolean} `true` if the current domain is already good or if
+		 * it has been fixed successfully.
+		 */
+		fixDomain: function() {
+			var domain;
+
+			while( 1 ) {
+				try {
+					// Try to access the parent document. It throws
+					// "access denied" if restricted by the "Same Origin" policy.
+					domain = window.parent.document.domain;
+					break;
+				} catch ( e ) {
+					// Calculate the value to set to document.domain.
+					domain = domain ?
+
+						// If it is not the first pass, strip one part of the
+						// name. E.g.  "test.example.com"  => "example.com"
+						domain.replace( /.+?(?:\.|$)/, '' ) :
+
+						// In the first pass, we'll handle the
+						// "document.domain = document.domain" case.
+						document.domain;
+
+					// Stop here if there is no more domain parts available.
+					if ( !domain )
+						break;
+
+					document.domain = domain;
+				}
+			}
+
+			return !!domain;
 		}
 	};
 })();

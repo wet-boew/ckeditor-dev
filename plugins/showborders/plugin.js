@@ -98,8 +98,8 @@
 							var attributes = element.attributes,
 								cssClass = attributes[ 'class' ],
 								border = parseInt( attributes.border, 10 );
-
-							if ( ( !border || border <= 0 ) && ( !cssClass || cssClass.indexOf( showBorderClassName ) == -1 ) )
+//If wet style present (table-foo) then skip - 
+							if ( ( !border || border <= 0 ) && ( !cssClass || (cssClass.indexOf( showBorderClassName ) == -1&&cssClass.indexOf( 'table-' ) == -1) ) )
 								attributes[ 'class' ] = ( cssClass || '' ) + ' ' + showBorderClassName;
 						}
 					}
@@ -125,7 +125,7 @@
 	CKEDITOR.on( 'dialogDefinition', function( ev ) {
 		var dialogName = ev.data.name;
 
-		if ( dialogName == 'table' || dialogName == 'tableProperties' ) {
+		/*if ( dialogName == 'table' || dialogName == 'tableProperties' ) {
 			var dialogDefinition = ev.data.definition,
 				infoTab = dialogDefinition.getContents( 'info' ),
 				borderField = infoTab.get( 'txtBorder' ),
@@ -159,7 +159,8 @@
 					};
 				});
 			}
-		}
+		}*/
+		//km remove table borders not allowed in html5
 	});
 
 })();

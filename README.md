@@ -1,9 +1,14 @@
-CKEditor 4 - The best browser-based WYSIWYG editor
+
+<img alt="Banner" src="https://lh6.googleusercontent.com/AkuCUZzHeSR-SsxHohbsyWQlQyPNT5eDvDrYpEkG2BsbQH8nj-kubMCoRKSCy3pYABsXPvuLHuc" title="A visual representation of WET-BOEW CKEditor">
+
+# Web Experience Toolkit CKEditor Distribution
 ==================================================
 
 ## Development Code
 
-This repository contains the development version of CKEditor.
+This repository contains the WET-BOEW development version of CKEditor. 
+It is a customised version of CKEditor to be used to edit content within the
+context of the WET-BOEW environment.  
 
 **Attention:** The code in this repository should be used locally and for
 development purposes only. We don't recommend distributing it on remote websites
@@ -20,24 +25,8 @@ Simply clone it on any local directory and you're set.
 
 This repository contains the following branches:
 
-  - **master***: development of the upcoming minor release.
-  - **major***: development of the upcoming major release.
-  - **stable**: latest stable release tag point (non-beta).
-  -	**latest**: latest release tag point (including betas).
-  - **release/A.B.x** (e.g. 4.0.x, 4.1.x): release freeze, tests and tagging.
-    Hotfixing.
- 
-(*) Note that both **master** and **major** are under heavy development. Their
-code didn't pass the release testing phase so it may be unstable.
-
-Additionally, all releases will have their relative tags in this form: 4.0,
-4.0.1, etc.
-
-### Samples
-
-The `samples/` folder contains a good set of examples that can be used
-to test your installation. It can also be a precious resource for learning
-some aspects of the CKEditor JavaScript API and its integration on web pages.
+  - **master**: development of the upcoming alpha release.
+  
 
 ### Code Structure
 
@@ -50,9 +39,11 @@ The development code contains the following main elements:
     - `skin/`: contains the official default skin of CKEditor.
     - `dev/`: contains "developer tools".
 
+All activity should be concentrated in the configuration file, and the plugins. 
+
 ### Building a Release
 
-A release optimized version of the development code can be easily created
+A release optimized / minified version of the development code can be easily created
 locally. The `dev/builder/build.sh` script can be used for that purpose:
 
 	> ./dev/builder/build.sh
