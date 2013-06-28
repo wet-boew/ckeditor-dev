@@ -22,6 +22,7 @@ CKEDITOR.editorConfig = function( config ) {
 		'blockquote,' +
 		'clipboard,' +
 		'contextmenu,' +
+		'dialogadvtab,' +
 		'div,' +
 		'elementspath,' +
 		'enterkey,' +

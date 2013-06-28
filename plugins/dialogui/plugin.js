@@ -279,13 +279,18 @@ CKEDITOR.plugins.add( 'dialogui', {
 				attributes.rows = elementDefinition.rows || 5;
 				attributes.cols = elementDefinition.cols || 20;
 
+				attributes[ 'class' ] = 'cke_dialog_ui_input_textarea ' + ( elementDefinition[ 'class' ] || '' );
+
 				if ( typeof elementDefinition.inputStyle != 'undefined' )
 					attributes.style = elementDefinition.inputStyle;
+
+				if ( elementDefinition.dir )
+					attributes.dir = elementDefinition.dir;
 
 				var innerHTML = function() {
 						attributes[ 'aria-labelledby' ] = this._.labelId;
 						this._.required && ( attributes[ 'aria-required' ] = this._.required );
-						var html = [ '<div class="cke_dialog_ui_input_textarea" role="presentation"><textarea class="cke_dialog_ui_input_textarea" id="', domId, '" ' ];
+						var html = [ '<div class="cke_dialog_ui_input_textarea" role="presentation"><textarea id="', domId, '" ' ];
 						for ( var i in attributes )
 							html.push( i + '="' + CKEDITOR.tools.htmlEncode( attributes[ i ] ) + '" ' );
 						html.push( '>', CKEDITOR.tools.htmlEncode( me._[ 'default' ] ), '</textarea></div>' );
@@ -587,9 +592,6 @@ CKEDITOR.plugins.add( 'dialogui', {
 				var innerHTML = function() {
 						_.frameId = CKEDITOR.tools.getNextId() + '_fileInput';
 
-						// Support for custom document.domain in IE.
-						var isCustomDomain = CKEDITOR.env.isCustomDomain();
-
 						var html = [
 							'<iframe' +
 								' frameborder="0"' +
@@ -600,11 +602,13 @@ CKEDITOR.plugins.add( 'dialogui', {
 								' title="', elementDefinition.label, '"' +
 								' src="javascript:void(' ];
 
-						html.push( isCustomDomain ? '(function(){' +
-							'document.open();' +
-							'document.domain=\'' + document.domain + '\';' +
-							'document.close();' +
-							'})()'
+						// Support for custom document.domain on IE. (#10165)
+						html.push( CKEDITOR.env.ie ?
+							'(function(){' + encodeURIComponent(
+								'document.open();' +
+								'(' + CKEDITOR.tools.fixDomain + ')();' +
+								'document.close();'
+							) + '})()'
 							:
 							'0' );
 
@@ -702,9 +706,9 @@ CKEDITOR.plugins.add( 'dialogui', {
 					// Look for focus function in definition.
 					var focus = elementDefinition.focus;
 					if ( focus ) {
+						var oldFocus = this.focus;
 						this.focus = function() {
-							this.selectParentTab();
-							typeof focus == 'function' && focus.call( this );
+							( typeof focus == 'function' ? focus : oldFocus ).call( this );
 							this.fire( 'focus' );
 						};
 						if ( elementDefinition.isFocusable ) {
@@ -1251,33 +1255,36 @@ CKEDITOR.plugins.add( 'dialogui', {
 				function generateFormField() {
 					frameDocument.$.open();
 
-					// Support for custom document.domain in IE.
-					if ( CKEDITOR.env.isCustomDomain() )
-						frameDocument.$.domain = document.domain;
-
 					var size = '';
 					if ( elementDefinition.size )
 						size = elementDefinition.size - ( CKEDITOR.env.ie ? 7 : 0 ); // "Browse" button is bigger in IE.
 
-				var inputId = _.frameId + '_input';
+					var inputId = _.frameId + '_input';
 
-					frameDocument.$.write( [ '<html dir="' + langDir + '" lang="' + langCode + '"><head><title></title></head><body style="margin: 0; overflow: hidden; background: transparent;">',
-														'<form enctype="multipart/form-data" method="POST" dir="' + langDir + '" lang="' + langCode + '" action="',
-														CKEDITOR.tools.htmlEncode( elementDefinition.action ),
-														'">',
-													// Replicate the field label inside of iframe.
-																	'<label id="', _.labelId, '" for="', inputId, '" style="display:none">',
-													CKEDITOR.tools.htmlEncode( elementDefinition.label ),
-													'</label>',
-													'<input id="', inputId, '" aria-labelledby="', _.labelId, '" type="file" name="',
-														CKEDITOR.tools.htmlEncode( elementDefinition.id || 'cke_upload' ),
-														'" size="',
-														CKEDITOR.tools.htmlEncode( size > 0 ? size : "" ),
-														'" />',
-														'</form>',
-														'</body></html>',
-														'<script>window.parent.CKEDITOR.tools.callFunction(' + callNumber + ');',
-														'window.onbeforeunload = function() {window.parent.CKEDITOR.tools.callFunction(' + unloadNumber + ')}</script>' ].join( '' ) );
+					frameDocument.$.write( [
+						'<html dir="' + langDir + '" lang="' + langCode + '"><head><title></title></head><body style="margin: 0; overflow: hidden; background: transparent;">',
+							'<form enctype="multipart/form-data" method="POST" dir="' + langDir + '" lang="' + langCode + '" action="',
+								CKEDITOR.tools.htmlEncode( elementDefinition.action ),
+							'">',
+								// Replicate the field label inside of iframe.
+								'<label id="', _.labelId, '" for="', inputId, '" style="display:none">',
+									CKEDITOR.tools.htmlEncode( elementDefinition.label ),
+								'</label>',
+								'<input id="', inputId, '" aria-labelledby="', _.labelId, '" type="file" name="',
+									CKEDITOR.tools.htmlEncode( elementDefinition.id || 'cke_upload' ),
+									'" size="',
+									CKEDITOR.tools.htmlEncode( size > 0 ? size : "" ),
+								'" />',
+							'</form>',
+						'</body></html>',
+						'<script>',
+							// Support for custom document.domain in IE.
+							CKEDITOR.env.ie ? '(' + CKEDITOR.tools.fixDomain + ')();' : '',
+
+							'window.parent.CKEDITOR.tools.callFunction(' + callNumber + ');',
+							'window.onbeforeunload = function() {window.parent.CKEDITOR.tools.callFunction(' + unloadNumber + ')}',
+						'</script>'
+					].join( '' ) );
 
 					frameDocument.$.close();
 
@@ -1309,7 +1316,7 @@ CKEDITOR.plugins.add( 'dialogui', {
 			/**
 			 * Defines the onChange event for UI element definitions.
 			 *
-			 * @propert {Object}
+			 * @property {Object}
 			 */
 			eventProcessors: {
 				onChange: function( dialog, func ) {

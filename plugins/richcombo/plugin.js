@@ -108,11 +108,11 @@ CKEDITOR.plugins.add( 'richcombo', {
 
 			/**
 			 * Renders the combo.
+			 *
 			 * @param {CKEDITOR.editor} editor The editor instance which this button is
 			 * to be used by.
 			 * @param {Array} output The output array to which append the HTML relative
 			 * to this button.
-			 * @example
 			 */
 			render: function( editor, output ) {
 				var env = CKEDITOR.env;
@@ -249,14 +249,14 @@ CKEDITOR.plugins.add( 'richcombo', {
 
 					me.setState( CKEDITOR.TRISTATE_ON );
 
-					list.focus( !list.multiSelect && me.getValue() );
-
 					me._.on = 1;
 
 					me.editorFocus && editor.focus();
 
 					if ( me.onOpen )
 						me.onOpen();
+
+					list.focus( !list.multiSelect && me.getValue() );
 				};
 
 				panel.onHide = function( preventOnClose ) {

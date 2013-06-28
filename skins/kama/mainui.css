@@ -114,6 +114,7 @@ Special outer level classes used in this file:
 	border: 1px solid black;
 }
 
+
 /* Make the main spaces enlarge to hold potentially floated content. */
 .cke_top,
 .cke_contents,
@@ -124,6 +125,19 @@ Special outer level classes used in this file:
 
 	/* Ideally this should be "auto", but it shows scrollbars in IE7. */
 	overflow: hidden;
+}
+
+/* Allow breaking toolbars when in a narrow editor. (#9947) */
+.cke_top
+{
+	white-space: normal;
+}
+
+/* On iOS we need to manually enable scrolling in the contents block. (#9945) */
+.cke_browser_ios .cke_contents
+{
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* The resizer is the small UI element that is rendered at the bottom right
