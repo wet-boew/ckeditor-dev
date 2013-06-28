@@ -32,6 +32,9 @@
 
 					if ( editor.blockless && ( styleDefinition.element in CKEDITOR.dtd.$block ) )
 						continue;
+					//remove div styles from array
+					
+					if (styleDefinition.element != 'div'){
 
 					styleName = styleDefinition.name;
 
@@ -47,6 +50,7 @@
 						styles[ styleName ] = style;
 						stylesList.push( style );
 						allowedContent.push( style );
+					}
 					}
 				}
 

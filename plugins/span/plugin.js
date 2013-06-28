@@ -2,7 +2,6 @@
  * @license Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.html or http://ckeditor.com/license
  */
-
 /**
  * @fileOverview Increse and decrease indent commands.
  */
@@ -22,7 +21,7 @@
 				this.indentClassMap[ editor.config.spanClasses[ i ] ] = i + 1;
 		}
 
-		this.startDisabled = name == 'outdent';
+		this.startDisabled = name == 'sp_outdent';
 	}
 
 	// Returns the CSS property to be used for identing a given element.
@@ -36,15 +35,15 @@
 
 	indentCommand.prototype = {
 		// It applies to a "block-like" context.
-		context: 'p',
+		context: 'div',
 		refresh: function( editor, path ) {
 			var list = path && path.contains( listNodeNames ),
-				firstBlock = path.block || path.blockLimit;
+				firstBlock = CKEDITOR.plugins.span.getSurroundDiv( editor );
 				
 			if ( list )
 				this.setState( CKEDITOR.TRISTATE_OFF );
 
-			else if ( !this.useIndentClasses && this.name == 'indent' )
+			else if ( !this.useIndentClasses && this.name == 'sp_indent' )
 				this.setState( CKEDITOR.TRISTATE_OFF );
 
 			else if ( !firstBlock )
@@ -59,7 +58,7 @@
 					indentStep = this.indentClassMap[ indentClass ];
 				}
 
-				if ( ( this.name == 'outdent' && !indentStep ) || ( this.name == 'indent' && indentStep == editor.config.spanClasses.length ) )
+				if ( ( this.name == 'sp_outdent' && !indentStep ) || ( this.name == 'sp_indent' && indentStep == editor.config.spanClasses.length ) )
 					this.setState( CKEDITOR.TRISTATE_DISABLED );
 				else
 					this.setState( CKEDITOR.TRISTATE_OFF );
@@ -77,120 +76,21 @@
 			var self = this,
 				database = {};
 			
-			function indentList( listNode ) {
-				// Our starting and ending points of the range might be inside some blocks under a list item...
-				// So before playing with the iterator, we need to expand the block to include the list items.
-				var startContainer = range.startContainer,
-					endContainer = range.endContainer;
-				while ( startContainer && !startContainer.getParent().equals( listNode ) )
-					startContainer = startContainer.getParent();
-				while ( endContainer && !endContainer.getParent().equals( listNode ) )
-					endContainer = endContainer.getParent();
-
-				if ( !startContainer || !endContainer )
-					return;
-
-				// Now we can iterate over the individual items on the same tree depth.
-				var block = startContainer,
-					itemsToMove = [],
-					stopFlag = false;
-				while ( !stopFlag ) {
-					if ( block.equals( endContainer ) )
-						stopFlag = true;
-					itemsToMove.push( block );
-					block = block.getNext();
-				}
-				if ( itemsToMove.length < 1 )
-					return;
-
-				// Do indent or outdent operations on the array model of the list, not the
-				// list's DOM tree itself. The array model demands that it knows as much as
-				// possible about the surrounding lists, we need to feed it the further
-				// ancestor node that is still a list.
-				var listParents = listNode.getParents( true );
-				for ( var i = 0; i < listParents.length; i++ ) {
-					if ( listParents[ i ].getName && listNodeNames[ listParents[ i ].getName() ] ) {
-						listNode = listParents[ i ];
-						break;
-					}
-				}
-				var indentOffset = self.name == 'indent' ? 1 : -1,
-					startItem = itemsToMove[ 0 ],
-					lastItem = itemsToMove[ itemsToMove.length - 1 ];
-
-				// Convert the list DOM tree into a one dimensional array.
-				var listArray = CKEDITOR.plugins.list.listToArray( listNode, database );
-
-				// Apply indenting or outdenting on the array.
-				var baseIndent = listArray[ lastItem.getCustomData( 'listarray_index' ) ].indent;
-				for ( i = startItem.getCustomData( 'listarray_index' ); i <= lastItem.getCustomData( 'listarray_index' ); i++ ) {
-					listArray[ i ].indent += indentOffset;
-					// Make sure the newly created sublist get a brand-new element of the same type. (#5372)
-					if ( indentOffset > 0 ) {
-						var listRoot = listArray[ i ].parent;
-						listArray[ i ].parent = new CKEDITOR.dom.element( listRoot.getName(), listRoot.getDocument() );
-					}
-				}
-
-				for ( i = lastItem.getCustomData( 'listarray_index' ) + 1;
-				i < listArray.length && listArray[ i ].indent > baseIndent; i++ )
-					listArray[ i ].indent += indentOffset;
-
-				// Convert the array back to a DOM forest (yes we might have a few subtrees now).
-				// And replace the old list with the new forest.
-				var newList = CKEDITOR.plugins.list.arrayToList( listArray, database, null, editor.config.enterMode, listNode.getDirection() );
-
-				// Avoid nested <li> after outdent even they're visually same,
-				// recording them for later refactoring.(#3982)
-				if ( self.name == 'outdent' ) {
-					var parentLiElement;
-					if ( ( parentLiElement = listNode.getParent() ) && parentLiElement.is( 'li' ) ) {
-						var children = newList.listNode.getChildren(),
-							pendingLis = [],
-							count = children.count(),
-							child;
-
-						for ( i = count - 1; i >= 0; i-- ) {
-							if ( ( child = children.getItem( i ) ) && child.is && child.is( 'li' ) )
-								pendingLis.push( child );
-						}
-					}
-				}
-
-				if ( newList )
-					newList.listNode.replace( listNode );
-
-				// Move the nested <li> to be appeared after the parent.
-				if ( pendingLis && pendingLis.length ) {
-					for ( i = 0; i < pendingLis.length; i++ ) {
-						var li = pendingLis[ i ],
-							followingList = li;
-
-						// Nest preceding <ul>/<ol> inside current <li> if any.
-						while ( ( followingList = followingList.getNext() ) && followingList.is && followingList.getName() in listNodeNames ) {
-							// IE requires a filler NBSP for nested list inside empty list item,
-							// otherwise the list item will be inaccessiable. (#4476)
-							if ( CKEDITOR.env.ie && !li.getFirst( function( node ) {
-								return isNotWhitespaces( node ) && isNotBookmark( node );
-							}))
-								li.append( range.document.createText( '\u00a0' ) );
-
-							li.append( followingList );
-						}
-
-						li.insertAfter( parentLiElement );
-					}
-				}
-			}
 
 			function indentBlock() {
-				var iterator = range.createIterator(),
+			var myelement = CKEDITOR.plugins.span.getSurroundDiv( editor );
+			//alert(myelement.getName());
+			 //range.endPath().contains('div','true','false');
+			 indentElement( myelement);
+			/*	var iterator = range.createIterator(),
 					enterMode = editor.config.enterMode;
 				iterator.enforceRealBlocks = true;
 				iterator.enlargeBr = enterMode != CKEDITOR.ENTER_BR;
 				var block;
-				while ( ( block = iterator.getNextParagraph( enterMode == CKEDITOR.ENTER_P ? 'p' : 'div' ) ) )
+				while ( ( block = iterator.getNextParagraph( 'div' ) ) ){
 					indentElement( block );
+					}*/
+				
 			}
 
 			function indentElement( element, dir ) {
@@ -208,11 +108,13 @@
 
 					// Operate on indent step index, transform indent step index back to class
 					// name.
-					if ( self.name == 'outdent' )
-						indentStep--;
-					else
+					if ( self.name == 'sp_outdent' ){
+						indentStep--;;
+						}
+					else{
 						indentStep++;
-
+						}
+							
 					if ( indentStep < 0 )
 						return false;
 
@@ -227,7 +129,7 @@
 					if ( isNaN( currentOffset ) )
 						currentOffset = 0;
 					var indentOffset = editor.config.indentOffset || 40;
-					currentOffset += ( self.name == 'indent' ? 1 : -1 ) * indentOffset;
+					currentOffset += ( self.name == 'sp_indent' ? 1 : -1 ) * indentOffset;
 
 					if ( currentOffset < 0 )
 						return false;
@@ -254,45 +156,6 @@
 				var rangeRoot = range.getCommonAncestor(),
 					nearestListBlock = rangeRoot;
 
-				while ( nearestListBlock && !( nearestListBlock.type == CKEDITOR.NODE_ELEMENT && listNodeNames[ nearestListBlock.getName() ] ) )
-					nearestListBlock = nearestListBlock.getParent();
-
-				// Avoid having selection enclose the entire list. (#6138)
-				// [<ul><li>...</li></ul>] =><ul><li>[...]</li></ul>
-				if ( !nearestListBlock ) {
-					var selectedNode = range.getEnclosedNode();
-					if ( selectedNode && selectedNode.type == CKEDITOR.NODE_ELEMENT && selectedNode.getName() in listNodeNames ) {
-						range.setStartAt( selectedNode, CKEDITOR.POSITION_AFTER_START );
-						range.setEndAt( selectedNode, CKEDITOR.POSITION_BEFORE_END );
-						nearestListBlock = selectedNode;
-					}
-				}
-
-				// Avoid selection anchors under list root.
-				// <ul>[<li>...</li>]</ul> =>	<ul><li>[...]</li></ul>
-				if ( nearestListBlock && range.startContainer.type == CKEDITOR.NODE_ELEMENT && range.startContainer.getName() in listNodeNames ) {
-					var walker = new CKEDITOR.dom.walker( range );
-					walker.evaluator = isListItem;
-					range.startContainer = walker.next();
-				}
-
-				if ( nearestListBlock && range.endContainer.type == CKEDITOR.NODE_ELEMENT && range.endContainer.getName() in listNodeNames ) {
-					walker = new CKEDITOR.dom.walker( range );
-					walker.evaluator = isListItem;
-					range.endContainer = walker.previous();
-				}
-
-				if ( nearestListBlock ) {
-					var firstListItem = nearestListBlock.getFirst( isListItem ),
-						hasMultipleItems = !!firstListItem.getNext( isListItem ),
-						rangeStart = range.startContainer,
-						indentWholeList = firstListItem.equals( rangeStart ) || firstListItem.contains( rangeStart );
-
-					// Indent the entire list if cursor is inside the first list item. (#3893)
-					// Only do that for indenting or when using indent classes or when there is something to outdent. (#6141)
-					if ( !( indentWholeList && ( self.name == 'indent' || self.useIndentClasses || parseInt( nearestListBlock.getStyle( getIndentCssProperty( nearestListBlock ) ), 10 ) ) && indentElement( nearestListBlock, !hasMultipleItems && firstListItem.getDirection() ) ) )
-						indentList( nearestListBlock );
-				} else
 					indentBlock();
 			}
 
@@ -325,9 +188,8 @@
 				return;
 
 			// Register commands.
-			var sp_indent = editor.addCommand( 'sp_indent', new indentCommand( editor, 'indent' ) ),
-				sp_outdent = editor.addCommand( 'sp_outdent', new indentCommand( editor, 'outdent' ) );
-
+			var sp_indent = editor.addCommand( 'sp_indent', new indentCommand( editor, 'sp_indent' ) ),
+				sp_outdent = editor.addCommand( 'sp_outdent', new indentCommand( editor, 'sp_outdent' ) );
 			if ( editor.ui.addButton ) {
 				// Register the toolbar buttons.
 				editor.ui.addButton( 'SP_Indent', {
@@ -385,6 +247,14 @@
 			});
 		}
 	});
+	CKEDITOR.plugins.span = {
+		getSurroundDiv: function( editor, start ) {
+			var path = editor.elementPath( start );
+			if(path.blockLimit.getAscendant( 'table', true )!=null){
+			return editor.elementPath( path.blockLimit ).contains( 'table', 1 );
+			}else{return editor.elementPath( path.blockLimit ).contains( 'div', 1 );}
+		}
+	};
 })();
 
 /**
