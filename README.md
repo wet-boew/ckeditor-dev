@@ -1,5 +1,5 @@
 
-<img alt="Banner" src="https://docs.google.com/file/d/0B7jRh59Ocw_IdWRoUmVmaTU0ZWM/edit?usp=sharing" title="A visual representation of WET-BOEW CKEditor">
+<img alt="Banner" src="https://lh6.googleusercontent.com/AkuCUZzHeSR-SsxHohbsyWQlQyPNT5eDvDrYpEkG2BsbQH8nj-kubMCoRKSCy3pYABsXPvuLHuc" title="A visual representation of WET-BOEW CKEditor">
 
 # Web Experience Toolkit CKEditor Distribution
 ==================================================
